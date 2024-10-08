@@ -6,7 +6,7 @@
 
 #### 2. 自分のブランチに接続する
 - レポジトリのクローンが終わったら、ターミナルを開いて次のコードを書いてください。
-{git checkout <ブランチ名>}
+//git checkout <ブランチ名>
 
 各ブランチ名：
 - 井ノ上くん - inoue
@@ -18,15 +18,15 @@
 
 ### コマンド一覧
 - メインレポジトリの更新・クローン
-{git pull origin main}
+//git pull origin main
 
 - 現在のブランチの確認
-{git branch}
+//git branch
 
 - メイン・ブランチの切り替え
-{git checkout <ブランチ名>}
+//git checkout <ブランチ名>
 
 - 現在のブランチをメインにマージする
-{git merge main}
+//git merge main
 
 以上
