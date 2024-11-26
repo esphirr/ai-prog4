@@ -11,8 +11,13 @@
     <div class="sidebar" id="tagSidebar">
         <h2>タグ</h2>
         <ul class="tag-list" id="tagList">
-            <li onclick="filterByTag('all')">すべて</li>
-        </ul>
+            <li onclick="filterByTag('to-do')">To-Do</li>
+            <li onclick="filterByTag('priority')">優先</li>
+            <li onclick="filterByTag('note')">ノート</li>
+            <li onclick="filterByTag('work')">仕事</li>
+            <li onclick="filterByTag('training')">研修</li>
+            <li onclick="filterByTag('daily')">日常</li>
+    </ul>
     </div>
     
     <div class="container">
@@ -36,17 +41,29 @@
         <h2 id="panelTitle">新規メモ作成</h2>
         <input type="text" id="memoTitle" placeholder="メモのタイトル">
         <textarea id="memoContent" placeholder="メモの内容" rows="10"></textarea>
-        <button class="expand-btn" onclick="toggleFullscreen()">拡大・縮小</button>
+
+        <div class="tag-options">
+            <label>タグを選択:</label>
+            <div id="tagButtons">
+                <button onclick="filterByTag('to-do')">To-Do</button>
+                <button onclick="filterByTag('priority')">優先</button>
+                <button onclick="filterByTag('note')">ノート</button>
+                <button onclick="filterByTag('work')">仕事</button>
+                <button onclick="filterByTag('training')">研修</button>
+                <button onclick="filterByTag('daily')">日常</button>
+            </div>
         
         <div class="panel-footer">
-            <button class="btn-save" id="saveButton" onclick="saveMemo()">✔</button>
-            <button class="btn-delete" id="deleteButton" onclick="deleteMemo()" style="display: none;">削除</button>
-            <button class="btn-cancel" onclick="togglePanel()">✖</button>
+                <button class="expand-btn" onclick="toggleFullscreen()">ページ拡大・縮小</button>
+                <button class="btn-save" id="saveButton" onclick="saveMemo()">✔</button>
+                <button class="btn-delete" id="deleteButton" onclick="deleteMemo()" style="display: none;">削除</button>
+                <button class="btn-cancel" onclick="togglePanel()">✖</button>
+            </div>
         </div>
-    </div>
 
     <script>
         let memos = [];
+        let selectedTags = new Set();
         let isFullScreen = false;
         let isTagSidebarOpen = false;
         let currentMemoIndex = null;
@@ -54,7 +71,9 @@
         function togglePanel() {
             const panel = document.getElementById("newMemoPanel");
             panel.classList.toggle("active");
-            if (!panel.classList.contains("active")) resetPanel();
+            if (!panel.classList.contains("active")) {
+                resetPanel();
+            }
         }
 
         function toggleFullscreen() {
@@ -69,14 +88,25 @@
             sidebar.classList.toggle("active", isTagSidebarOpen);
         }
 
+        function toggleTag(tag) {
+            const button = document.querySelector(`#tagButtons button:contains("${tag}")`);
+            if (selectedTags.has(tag)) {
+                selectedTags.delete(tag);
+                button.classList.remove("selected");
+            } else {
+                selectedTags.add(tag);
+                button.classList.add("selected");
+            }
+        }
         function saveMemo() {
             const title = document.getElementById("memoTitle").value;
             const content = document.getElementById("memoContent").value;
             if (title && content) {
+                const memo = { title, content, tags: Array.from(selectedTags), date: new Date() };
                 if (currentMemoIndex !== null) {
-                    memos[currentMemoIndex] = { title, content, date: new Date() };
+                    memos[currentMemoIndex] = memo;
                 } else {
-                    memos.push({ title, content, date: new Date() });
+                    memos.push(memo);
                 }
                 displayMemos();
                 togglePanel();
@@ -88,8 +118,94 @@
         function resetPanel() {
             document.getElementById("memoTitle").value = '';
             document.getElementById("memoContent").value = '';
+            selectedTags.clear();
+            document.querySelectorAll("#tagButtons button").forEach(button => button.classList.remove("selected"));
             document.getElementById("panelTitle").innerText = "新規メモ作成";
             document.getElementById("deleteButton").style.display = "none";
+        }
+
+        function displayMemos() {
+            const container = document.getElementById("memoContainer");
+            container.innerHTML = '';
+            memos.forEach((memo, index) => {
+                const memoCard = document.createElement("div");
+                memoCard.className = "memo-card";
+                memoCard.innerHTML = `
+                    <h3>${memo.title}</h3>
+                    <p>${memo.content}</p>
+                    <div class="tags">${memo.tags.join(", ")}</div>
+                `;
+                memoCard.onclick = () => editMemo(index);
+                container.appendChild(memoCard);
+            });
+        }
+
+        function editMemo(index) {
+            const memo = memos[index];
+            currentMemoIndex = index;
+            document.getElementById("memoTitle").value = memo.title;
+            document.getElementById("memoContent").value = memo.content;
+            selectedTags = new Set(memo.tags);
+            document.getElementById("panelTitle").innerText = "メモ編集";
+            document.getElementById("deleteButton").style.display = "block";
+            togglePanel();
+        }
+
+        function showMemoContent(index) {
+            const memo = memos[index];
+            document.getElementById("memoTitle").value = memo.title;
+            document.getElementById("memoContent").value = memo.content;
+            currentMemoIndex = index;
+            document.getElementById("panelTitle").innerText = "メモの編集";
+            document.getElementById("deleteButton").style.display = "inline"; // Show delete button
+            togglePanel();
+        }
+
+        function deleteMemo() {
+            if (currentMemoIndex !== null && confirm("このメモを削除しますか？")) {
+                memos.splice(currentMemoIndex, 1);
+                displayMemos();
+                togglePanel();
+                resetPanel(); // Reset panel after deletion
+            }
+        }
+
+        function searchMemos() {
+            const query = document.getElementById("search").value.toLowerCase();
+            const memoContainer = document.getElementById("memoContainer");
+            memoContainer.innerHTML = '';
+            memos
+                .filter(memo => memo.title.toLowerCase().includes(query))
+                .forEach((memo, index) => {
+                    const memoTag = document.createElement("div");
+                    memoTag.classList.add("memo-tag");
+                    memoTag.innerHTML = `
+                        <span onclick="showMemoContent(${index})">${memo.title}</span>
+                    `;
+                    memoContainer.appendChild(memoTag);
+                });
+        }
+
+        function sortMemos() {
+            memos.sort((a, b) => b.date - a.date);
+            displayMemos();
+        }
+
+        function filterByTag(tag) {
+            const container = document.getElementById("memoContainer");
+            container.innerHTML = '';
+            const filteredMemos = tag === 'all' ? memos : memos.filter(memo => memo.tags.includes(tag));
+            filteredMemos.forEach((memo, index) => {
+                const memoCard = document.createElement("div");
+                memoCard.className = "memo-card";
+                memoCard.innerHTML = `
+                    <h3>${memo.title}</h3>
+                    <p>${memo.content}</p>
+                    <div class="tags">${memo.tags.join(", ")}</div>
+                `;
+                memoCard.onclick = () => editMemo(index);
+                container.appendChild(memoCard);
+            });
         }
     </script>
 </body>

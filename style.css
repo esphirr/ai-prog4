@@ -182,12 +182,17 @@ body {
     background-color: #e53935;
 }
 .expand-btn {
-    background-color: #b3b3b3;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
+    position: absolute;
+    bottom: 60px;
+    left: 10px;
+    background-color: #929292;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
     border-radius: 4px;
+    cursor: pointer;
+}
+.btn-close {
+    background-color: #777777;
 }
 
 /* Sidebar for Tags */
@@ -217,5 +222,45 @@ body {
     margin-bottom: 5px;
 }
 .sidebar .tag-list li:hover {
+    background-color: #e0e0e0;
+}
+
+/* Tag Option */
+.tag-options {
+    margin: 10px 0;
+}
+#tagButtons button {
+    margin: 5px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+#tagButtons button.selected {
+    background-color: #588096;
+    color: white;
+}
+#tagButtons button:hover {
+    background-color: #d0d0d0;
+}
+.tags {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+.tag-list {
+    list-style-type: none;
+    padding: 0;
+}
+.tag-list li {
+    margin: 5px 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+}
+.tag-list li:hover {
     background-color: #e0e0e0;
 }
