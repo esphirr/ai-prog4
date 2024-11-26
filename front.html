@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoMemo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar" id="tagSidebar">
+        <h2>タグ</h2>
+        <ul class="tag-list" id="tagList">
+            <li onclick="filterByTag('all')">すべて</li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h1>MemoMemo</h1>
+        <h2 class="subheader">ホーム</h2>
+
+        <div class="search-bar">
+            <label for="search">メモ:</label>
+            <input type="text" id="search" placeholder="タグ検索" oninput="searchMemos()">
+            <div class="toolbar">
+                <button onclick="toggleTagSidebar()">≡ タグ</button>
+                <button onclick="sortMemos()">⇅ 並び替え</button>
+                <div class="new-memo" onclick="togglePanel()">+ 新規メモ</div>
+            </div>
+        </div>
+        
+        <div class="memo-tags" id="memoContainer"></div>
+    </div>
+
+    <div class="slide-in-panel" id="newMemoPanel">
+        <h2 id="panelTitle">新規メモ作成</h2>
+        <input type="text" id="memoTitle" placeholder="メモのタイトル">
+        <textarea id="memoContent" placeholder="メモの内容" rows="10"></textarea>
+        <button class="expand-btn" onclick="toggleFullscreen()">拡大・縮小</button>
+        
+        <div class="panel-footer">
+            <button class="btn-save" id="saveButton" onclick="saveMemo()">✔</button>
+            <button class="btn-delete" id="deleteButton" onclick="deleteMemo()" style="display: none;">削除</button>
+            <button class="btn-cancel" onclick="togglePanel()">✖</button>
+        </div>
+    </div>
+
+    <script>
+        let memos = [];
+        let isFullScreen = false;
+        let isTagSidebarOpen = false;
+        let currentMemoIndex = null;
+
+        function togglePanel() {
+            const panel = document.getElementById("newMemoPanel");
+            panel.classList.toggle("active");
+            if (!panel.classList.contains("active")) resetPanel();
+        }
+
+        function toggleFullscreen() {
+            const panel = document.getElementById("newMemoPanel");
+            isFullScreen = !isFullScreen;
+            panel.classList.toggle("fullscreen", isFullScreen);
+        }
+
+        function toggleTagSidebar() {
+            const sidebar = document.getElementById("tagSidebar");
+            isTagSidebarOpen = !isTagSidebarOpen;
+            sidebar.classList.toggle("active", isTagSidebarOpen);
+        }
+
+        function saveMemo() {
+            const title = document.getElementById("memoTitle").value;
+            const content = document.getElementById("memoContent").value;
+            if (title && content) {
+                if (currentMemoIndex !== null) {
+                    memos[currentMemoIndex] = { title, content, date: new Date() };
+                } else {
+                    memos.push({ title, content, date: new Date() });
+                }
+                displayMemos();
+                togglePanel();
+            } else {
+                alert("タイトルと内容を入力してください。");
+            }
+        }
+
+        function resetPanel() {
+            document.getElementById("memoTitle").value = '';
+            document.getElementById("memoContent").value = '';
+            document.getElementById("panelTitle").innerText = "新規メモ作成";
+            document.getElementById("deleteButton").style.display = "none";
+        }
+    </script>
+</body>
+</html>
