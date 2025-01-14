@@ -1,26 +1,32 @@
 import streamlit as st
+import datetime
 
-# Page Configuration
 st.set_page_config(page_title="MemoMemo", layout="wide")
 
-# Link external CSS file
 def local_css(file_name):
     with open(file_name, encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 local_css("style.css")
 
-# State initialization
 if "memos" not in st.session_state:
     st.session_state.memos = []
 if "current_memo_index" not in st.session_state:
     st.session_state.current_memo_index = None
+if "memo_title" not in st.session_state:
+    st.session_state.memo_title = ""
+if "memo_content" not in st.session_state:
+    st.session_state.memo_content = ""
+if "selected_tags" not in st.session_state:
+    st.session_state.selected_tags = []
+if "memo_date" not in st.session_state:
+    st.session_state.memo_date = datetime.date.today() 
 
-# Functions
 def reset_panel():
     st.session_state.memo_title = ""
     st.session_state.memo_content = ""
     st.session_state.selected_tags = []
+    st.session_state.memo_date = datetime.date.today()  
     st.session_state.current_memo_index = None
 
 def save_memo():
@@ -31,24 +37,35 @@ def save_memo():
             "tags": st.session_state.selected_tags,
             "date": st.session_state.memo_date
         }
+
         if st.session_state.current_memo_index is not None:
-            st.session_state.memos[st.session_state.current_memo_index] = memo
+            if 0 <= st.session_state.current_memo_index < len(st.session_state.memos):
+                st.session_state.memos[st.session_state.current_memo_index] = memo
+            else:
+                st.error("無効なメモインデックスです。")
         else:
             st.session_state.memos.append(memo)
+        
         reset_panel()
     else:
         st.error("タイトルと内容を入力してください。")
 
 def delete_memo():
     if st.session_state.current_memo_index is not None:
-        del st.session_state.memos[st.session_state.current_memo_index]
-        reset_panel()
+        if 0 <= st.session_state.current_memo_index < len(st.session_state.memos):
+            del st.session_state.memos[st.session_state.current_memo_index]
+            reset_panel()
+        else:
+            st.error("無効なメモインデックスです。")
+    else:
+        st.error("メモを選択してください。")
 
 def edit_memo(index):
     memo = st.session_state.memos[index]
     st.session_state.memo_title = memo["title"]
     st.session_state.memo_content = memo["content"]
     st.session_state.selected_tags = memo["tags"]
+    st.session_state.memo_date = memo["date"]
     st.session_state.current_memo_index = index
 
 def filter_memos_by_tag(tag):
@@ -59,23 +76,19 @@ def filter_memos_by_tag(tag):
 def search_memos(query):
     return [memo for memo in st.session_state.memos if query.lower() in memo["title"].lower()]
 
-# Sidebar
 with st.sidebar:
     st.header("タグ")
     tags = ["to-do", "priority", "note", "work", "training", "daily"]
     selected_tag = st.radio("フィルタを選択", ["all"] + tags, key="filter_tag")
     filtered_memos = filter_memos_by_tag(selected_tag)
 
-# Main container
 st.title("MemoMemo")
 st.subheader("ホーム")
 
-# Search bar
-search_query = st.text_input("タグ検索", key="search_query")
+search_query = st.text_input("タイトル検索", key="search_query")
 if search_query:
     filtered_memos = search_memos(search_query)
 
-# Display memos
 for index, memo in enumerate(filtered_memos):
     with st.container():
         st.write(f"### {memo['title']}")
@@ -85,16 +98,14 @@ for index, memo in enumerate(filtered_memos):
             edit_memo(index)
         st.write("---")
 
-# New Memo Panel
 st.subheader("新規メモ作成")
-st.text_input("メモのタイトル", key="memo_title")
-st.text_area("メモの内容", key="memo_content", height=200)
-st.date_input("作成日", key="memo_date")
 
-# Tags selection
-st.multiselect("タグを選択", options=tags, key="selected_tags")
+st.text_input("メモのタイトル", key="memo_title", value=st.session_state.memo_title)
+st.text_area("メモの内容", key="memo_content", height=200, value=st.session_state.memo_content)
+st.date_input("作成日", key="memo_date", value=st.session_state.memo_date)
 
-# Panel Footer
+st.multiselect("タグを選択", options=tags, key="selected_tags", default=st.session_state.selected_tags)
+
 if st.button("✔ 保存"):
     save_memo()
 
