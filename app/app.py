@@ -9,10 +9,10 @@ from memo_class import MemoGenerate, MemoShow
 
 API_URL = "http://localhost:8000"
 
+# メインエリア
 st.set_page_config(page_title="📝MemoMemo📝", layout="wide")
 st.title("📝MemoMemo📝")
 
-# メインエリア
 tab1, tab2 = st.tabs(["新規メモ", "メモ一覧"])
 # tab1 新規メモ作成
 with tab1:
