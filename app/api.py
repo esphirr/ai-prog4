@@ -10,11 +10,13 @@ app = FastAPI()
 # データモデル
 class Memo(BaseModel):
     title: str
+    tag: str
     content: str
 
 class MemoResponse(BaseModel):
     id: int
     title: str
+    tag: str
     content: str
     created_at: str
 
@@ -26,9 +28,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS memos
         (id INTEGER PRIMARY KEY AUTOINCREMENT,
          title TEXT,
+         tag TEXT,
          content TEXT,
          created_at TIMESTAMP)
-    ''')
+        ''')
     conn.commit()
     conn.close()
 
@@ -41,13 +44,13 @@ def create_memo(memo: Memo):
     c = conn.cursor()
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     c.execute(
-        "INSERT INTO memos (title, content, created_at) VALUES (?, ?, ?)",
-        (memo.title, memo.content, created_at)
+        "INSERT INTO memos (title, tag, content, created_at) VALUES (?, ?, ?, ?)",
+        (memo.title, memo.tag, memo.content, created_at)
     )
     memo_id = c.lastrowid
     conn.commit()
     conn.close()
-    return MemoResponse(id=memo_id, title=memo.title, content=memo.content, created_at=created_at)
+    return MemoResponse(id=memo_id, title=memo.title, tag=memo.tag, content=memo.content, created_at=created_at)
 
 # メモ一覧取得
 @app.get("/memos/", response_model=List[MemoResponse])
@@ -58,7 +61,7 @@ def get_memos():
     memos = c.fetchall()
     conn.close()
     return [
-        MemoResponse(id=memo[0], title=memo[1], content=memo[2], created_at=memo[3])
+        MemoResponse(id=memo[0], title=memo[1], tag=memo[2], content=memo[3], created_at=memo[4])
         for memo in memos
     ]
 
